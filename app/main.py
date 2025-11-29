@@ -18,3 +18,19 @@ def create_book(title: str, author: str, price: float, year: int, db: Session = 
 def read_books(skip: int = 0, limit: int = 100, db: Session = Depends(database.get_db)):
     books = db.query(models.Book).offset(skip).limit(limit).all()
     return books
+
+@app.get("/books/{book_id}")
+def read_book(book_id: int, db: Session = Depends(database.get_db)):
+    book = db.query(models.Book).filter(models.Book.id == book_id).first()
+    if not book:
+        raise HTTPException(status_code=404, detail="Book not found")
+    return book
+
+@app.delete("/books/{book_id}")
+def delete_book(book_id: int, db: Session = Depends(database.get_db)):
+    book = db.query(models.Book).filter(models.Book.id == book_id).first()
+    if not book:
+        raise HTTPException(status_code=404, detail="Book not found")
+    db.delete(book)
+    db.commit()
+    return {"detail": "Book deleted"}
